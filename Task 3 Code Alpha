@@ -1,0 +1,62 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load the dataset
+# Make sure to provide the correct path to the dataset
+file_path = "/content/car data.csv"  # Replace with your file path
+car_data = pd.read_csv(file_path)
+
+# Display the first few rows to understand the data structure
+print("First 5 rows of the dataset:")
+print(car_data.head())
+
+# Data Preprocessing: Encoding categorical variables
+# Label encode categorical columns: 'Fuel_Type', 'Selling_type', and 'Transmission'
+label_encoder = LabelEncoder()
+car_data['Fuel_Type'] = label_encoder.fit_transform(car_data['Fuel_Type'])
+car_data['Selling_type'] = label_encoder.fit_transform(car_data['Selling_type'])
+car_data['Transmission'] = label_encoder.fit_transform(car_data['Transmission'])
+
+# Feature Engineering: Creating a new feature 'Car_Age' from 'Year'
+car_data['Car_Age'] = 2024 - car_data['Year']  # Assuming the current year is 2024
+# Drop columns that are not useful for model training
+car_data.drop(['Year', 'Car_Name'], axis=1, inplace=True)
+
+# Print the updated dataset structure
+print("\nUpdated dataset after preprocessing:")
+print(car_data.head())
+
+# Define features (X) and target variable (y)
+# X contains all the features except 'Selling_Price' which is the target variable
+X = car_data.drop('Selling_Price', axis=1)
+y = car_data['Selling_Price']
+
+# Split the data into training and testing sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scale the features for better model performance using StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Model Training: Using Random Forest Regressor
+# Random Forest is a robust algorithm for regression tasks
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train_scaled, y_train)
+
+# Model Evaluation
+# Predict on the test data
+y_pred = model.predict(X_test_scaled)
+
+# Calculate Mean Squared Error and R-squared Score
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Print evaluation metrics
+print(f"\nModel Performance Metrics:")
+print(f"Mean Squared Error (MSE): {mse:.2f}")
+print(f"R-squared Score (R²): {r2:.2f}")
